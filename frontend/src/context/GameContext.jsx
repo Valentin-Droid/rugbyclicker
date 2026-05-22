@@ -100,11 +100,16 @@ export function GameProvider({ children }) {
   const tick = useCallback(() => {
     if (!partie) return;
     setRessources((prev) =>
-      prev.map((r) =>
-        r.id_ressource === 1
-          ? { ...r, quantite: r.quantite + productionParSeconde }
-          : r
-      )
+      prev.map((r) => {
+        if (r.id_ressource === 1) {
+          return { ...r, quantite: r.quantite + productionParSeconde };
+        }
+        // 1 Fan par tick (toutes les secondes) quand production > 0
+        if (r.id_ressource === 2 && productionParSeconde > 0) {
+          return { ...r, quantite: r.quantite + 1 };
+        }
+        return r;
+      })
     );
   }, [partie, productionParSeconde]);
 

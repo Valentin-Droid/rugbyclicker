@@ -58,6 +58,12 @@ const gameService = {
         [gain, partieId]
       );
 
+      // +1 Fan par clic
+      await client.query(
+        'UPDATE stock_ressource SET quantite = quantite + 1 WHERE id_partie = $1 AND id_ressource = 2',
+        [partieId]
+      );
+
       await client.query(
         'UPDATE partie SET total_argent_genere = COALESCE(total_argent_genere, 0) + $1 WHERE id_partie = $2',
         [gain, partieId]
@@ -84,10 +90,15 @@ const gameService = {
           'UPDATE stock_ressource SET quantite = quantite + $1 WHERE id_partie = $2 AND id_ressource = 3',
           [10 * nouveauNiveau, partieId]
         );
+        // +100 × nouveau_niveau Fans à chaque level-up
+        await client.query(
+          'UPDATE stock_ressource SET quantite = quantite + $1 WHERE id_partie = $2 AND id_ressource = 2',
+          [100 * nouveauNiveau, partieId]
+        );
       }
 
       await client.query('COMMIT');
-      return { gain, nouvelle_quantite: quantiteResult.rows[0].quantite };
+      return { gain, fans_gagnes: 1, nouvelle_quantite: quantiteResult.rows[0].quantite };
     } catch (err) {
       await client.query('ROLLBACK');
       throw err;
@@ -147,6 +158,15 @@ const gameService = {
         );
       }
 
+      // Fans générés = 10% des gains hors-ligne
+      const fansHorsLigne = Math.floor(gainsHorsLigne / 10);
+      if (fansHorsLigne > 0) {
+        await client.query(
+          'UPDATE stock_ressource SET quantite = quantite + $1 WHERE id_partie = $2 AND id_ressource = 2',
+          [fansHorsLigne, partieId]
+        );
+      }
+
       await client.query(
         'UPDATE partie SET dernier_login = $1 WHERE id_partie = $2',
         [now, partieId]
@@ -166,6 +186,11 @@ const gameService = {
         await client.query(
           'UPDATE stock_ressource SET quantite = quantite + $1 WHERE id_partie = $2 AND id_ressource = 3',
           [10 * nouveauNiveau, partieId]
+        );
+        // +100 × nouveau_niveau Fans à chaque level-up
+        await client.query(
+          'UPDATE stock_ressource SET quantite = quantite + $1 WHERE id_partie = $2 AND id_ressource = 2',
+          [100 * nouveauNiveau, partieId]
         );
       }
 
