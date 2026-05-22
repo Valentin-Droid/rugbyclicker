@@ -16,13 +16,13 @@ function traduireEffet(effet) {
   const [type, valeur] = effet.split(':');
   const mult = parseFloat(valeur);
   if (type === 'multiplicateur_production') {
-    return `Production x${mult}`;
+    return `Production ×${mult}`;
   }
   if (type === 'multiplicateur_clic') {
-    return `Clic x${mult}`;
+    return `Clic ×${mult}`;
   }
   if (type === 'multiplicateur_global') {
-    return `Global x${mult}`;
+    return `Global ×${mult}`;
   }
   return effet;
 }
@@ -40,7 +40,7 @@ function formatDate(dateStr) {
 }
 
 function AmeliorationCard({ amelioration }) {
-  const { ressources, acheterAmelioration } = useGame();
+  const { ressources, productionParSeconde, acheterAmelioration } = useGame();
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -61,17 +61,40 @@ function AmeliorationCard({ amelioration }) {
     }
   };
 
+  // Parse effect for before/after display
+  const effetLabel = traduireEffet(amelioration.effet);
+  const [type, valeur] = amelioration.effet.split(':');
+  const mult = parseFloat(valeur);
+
   return (
     <div className={`amel-card${dejaAchete ? ' amel-card--owned' : ''}`}>
       <div className="amel-card__header">
-        <h4 className="amel-card__name">{amelioration.nom}</h4>
-        <span className="amel-card__effet">{traduireEffet(amelioration.effet)}</span>
+        <h4 className="amel-card__name">
+          {dejaAchete && '✅ '}
+          {amelioration.nom}
+        </h4>
+        <span className={`amel-card__effet${dejaAchete ? ' amel-card__effet--applied' : ''}`}>
+          {effetLabel}
+        </span>
       </div>
+
+      {/* Before/after preview when not owned */}
+      {!dejaAchete && canBuy && (
+        <p className="amel-card__avap">
+          Effet : {effetLabel} <strong>(actuel ×1.0)</strong>
+        </p>
+      )}
+
+      {!dejaAchete && !canBuy && (
+        <p className="amel-card__avap">
+          {formatNumber(cout - argent)}€ manquants pour {effetLabel}
+        </p>
+      )}
 
       <div className="amel-card__action">
         {dejaAchete ? (
           <span className="amel-card__badge">
-            Acquis
+            ✅ Acquis
             {amelioration.date_achat && (
               <span className="amel-card__date">
                 {formatDate(amelioration.date_achat)}
@@ -85,7 +108,7 @@ function AmeliorationCard({ amelioration }) {
             disabled={!canBuy || loading}
             title={!canBuy ? 'Pas assez d\'argent' : ''}
           >
-            {loading ? 'Achat...' : `Acheter (${formatNumber(cout)}EUR)`}
+            {loading ? 'Achat...' : `Acheter (${formatNumber(cout)}€)`}
           </button>
         )}
       </div>

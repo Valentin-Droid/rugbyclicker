@@ -7,7 +7,7 @@ function Home() {
   return (
     <div className="home">
       <header className="hero">
-        <h1>RugbyClicker</h1>
+        <h1>🏉 RugbyClicker</h1>
         <p className="hero-subtitle">
           Deviens le meilleur manager de rugby ! Clique, investis et fais grandir ton club.
         </p>
@@ -33,6 +33,31 @@ function Home() {
             <span className="step-number">3</span>
             <h3>Progresse et domine</h3>
             <p>Débloque des améliorations et deviens une légende du rugby.</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="home-ranking">
+        <h2>🏆 Classement des clubs</h2>
+        <p className="home-ranking__clubs">
+          <strong>+ de 1 000</strong>
+          clubs créés !
+        </p>
+        <div className="home-ranking__placeholder">
+          <div className="ranking-card">
+            <div className="ranking-card__rank">🥇</div>
+            <div className="ranking-card__name">RC Toulon</div>
+            <div className="ranking-card__level">Niveau 42</div>
+          </div>
+          <div className="ranking-card">
+            <div className="ranking-card__rank">🥈</div>
+            <div className="ranking-card__name">Stade Toulousain</div>
+            <div className="ranking-card__level">Niveau 38</div>
+          </div>
+          <div className="ranking-card">
+            <div className="ranking-card__rank">🥉</div>
+            <div className="ranking-card__name">ASM Clermont</div>
+            <div className="ranking-card__level">Niveau 35</div>
           </div>
         </div>
       </section>

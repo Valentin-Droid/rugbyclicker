@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useGame } from '../hooks/useGame';
 import useInterval from '../hooks/useInterval';
@@ -7,6 +7,7 @@ import ResourceBar from '../components/dashboard/ResourceBar';
 import ClickZone from '../components/dashboard/ClickZone';
 import ShopPanel from '../components/shop/ShopPanel';
 import ClubProgression from '../components/progression/ClubProgression';
+import NextAction from '../components/dashboard/NextAction';
 
 function Dashboard() {
   const { user, logout } = useAuth();
@@ -18,6 +19,7 @@ function Dashboard() {
     tick,
     loadGameState,
   } = useGame();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     loadOrCreatePartie();
@@ -46,7 +48,7 @@ function Dashboard() {
     return (
       <div className="dashboard">
         <header className="dashboard-header">
-          <h1>RugbyClicker</h1>
+          <h1>🏉 RugbyClicker</h1>
           <button onClick={logout} className="logout-button">
             Déconnexion
           </button>
@@ -66,7 +68,7 @@ function Dashboard() {
     <div className="dashboard">
       <header className="dashboard-header">
         <div>
-          <h1>{partie.nom_club}</h1>
+          <h1>🏉 {partie.nom_club}</h1>
           <span className="header-level">Niveau {partie.niveau}</span>
         </div>
         <div className="header-user">
@@ -75,7 +77,27 @@ function Dashboard() {
             Déconnexion
           </button>
         </div>
+        <button
+          className="hamburger-btn"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          aria-label="Menu"
+        >
+          ☰
+        </button>
       </header>
+
+      {mobileMenuOpen && (
+        <nav className="mobile-nav open">
+          <span style={{ color: 'var(--color-gold)', padding: '0.5rem 0', fontWeight: 600 }}>
+            {user?.pseudo}
+          </span>
+          <button onClick={logout} style={{ color: 'var(--color-gold)', cursor: 'pointer', fontSize: '1rem', fontWeight: 600, padding: '0.5rem 0', textAlign: 'left' }}>
+            Déconnexion
+          </button>
+        </nav>
+      )}
+
+      <NextAction />
 
       <main className="dashboard-grid">
         <div className="dashboard-col dashboard-col-left">
