@@ -4,6 +4,7 @@ const cors = require('cors');
 
 const authRoutes = require('./routes/authRoutes');
 const partieRoutes = require('./routes/partieRoutes');
+const shopRoutes = require('./routes/shopRoutes');
 const errorHandler = require('./middleware/errorHandler');
 
 const swaggerUi = require('swagger-ui-express');
@@ -18,6 +19,7 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/parties', partieRoutes);
+app.use('/api/parties', shopRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

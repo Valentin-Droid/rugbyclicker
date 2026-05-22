@@ -5,6 +5,8 @@ import useInterval from '../hooks/useInterval';
 import NewGameModal from '../components/dashboard/NewGameModal';
 import ResourceBar from '../components/dashboard/ResourceBar';
 import ClickZone from '../components/dashboard/ClickZone';
+import ShopPanel from '../components/shop/ShopPanel';
+import ClubProgression from '../components/progression/ClubProgression';
 
 function Dashboard() {
   const { user, logout } = useAuth();
@@ -85,20 +87,12 @@ function Dashboard() {
         </div>
 
         <div className="dashboard-col dashboard-col-right">
-          <div className="shop-placeholder">
-            <h3>🏪 Boutique</h3>
-            <p>Les achats d&apos;infrastructures et d&apos;améliorations arrivent bientôt !</p>
-          </div>
+          <ShopPanel />
         </div>
       </main>
 
       <footer className="dashboard-footer">
-        <div className="progression-bar">
-          <div className="progression-fill" style={{ width: '0%' }} />
-        </div>
-        <span className="progression-text">
-          Phase 2 — Le shop sera disponible dans une prochaine mise à jour
-        </span>
+        <ClubProgression />
       </footer>
     </div>
   );

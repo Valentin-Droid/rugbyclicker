@@ -40,7 +40,7 @@ const partieService = {
 
   getFullState: async (partieId) => {
     const partieResult = await pool.query(
-      'SELECT id_partie, nom_club, niveau, dernier_login FROM partie WHERE id_partie = $1',
+      'SELECT id_partie, nom_club, niveau, dernier_login, COALESCE(total_argent_genere, 0) as total_argent_genere FROM partie WHERE id_partie = $1',
       [partieId]
     );
 

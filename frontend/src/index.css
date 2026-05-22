@@ -679,12 +679,235 @@ button {
     min-height: 250px;
   }
 
-  .shop-placeholder {
+  .shop-panel {
     position: static;
+    max-height: none;
   }
 
   .dashboard-header {
     flex-direction: column;
     align-items: flex-start;
   }
+}
+
+/* ===== SHOP PANEL ===== */
+.shop-panel {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 180px);
+  position: sticky;
+  top: 1.5rem;
+}
+
+.shop-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 0.75rem;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.shop-tab {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  background: var(--color-white);
+  color: var(--color-text-light);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.shop-tab:hover {
+  background: var(--color-cream);
+}
+
+.shop-tab--active {
+  background: var(--color-primary);
+  color: var(--color-white);
+}
+
+.shop-content {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-right: 4px;
+  flex: 1;
+}
+
+.shop-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.shop-content::-webkit-scrollbar-thumb {
+  background: var(--color-gold);
+  border-radius: 2px;
+}
+
+/* ===== INFRASTRUCTURE CARD ===== */
+.infra-card {
+  background: var(--color-white);
+  padding: 1rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: transform 0.2s;
+}
+
+.infra-card:hover {
+  transform: translateY(-1px);
+}
+
+.infra-card__header {
+  margin-bottom: 0.5rem;
+}
+
+.infra-card__name {
+  color: var(--color-primary);
+  font-size: 0.95rem;
+  margin-bottom: 0.15rem;
+}
+
+.infra-card__desc {
+  color: var(--color-text-light);
+  font-size: 0.78rem;
+  line-height: 1.3;
+}
+
+.infra-card__stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  font-size: 0.8rem;
+}
+
+.infra-card__stat {
+  color: var(--color-text-light);
+  font-weight: 600;
+}
+
+.infra-card__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.infra-card__btn {
+  flex: 1;
+  padding: 0.4rem 0.5rem;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, opacity 0.2s;
+}
+
+.infra-card__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.infra-card__buy {
+  background: var(--color-primary);
+  color: var(--color-white);
+}
+
+.infra-card__buy:hover:not(:disabled) {
+  background: var(--color-primary-light);
+}
+
+.infra-card__upgrade {
+  background: var(--color-gold);
+  color: var(--color-primary);
+}
+
+.infra-card__upgrade:hover:not(:disabled) {
+  background: var(--color-gold-light);
+}
+
+.shop-error {
+  color: var(--color-error);
+  font-size: 0.75rem;
+  margin-top: 0.4rem;
+}
+
+/* ===== AMELIORATION CARD ===== */
+.amel-card {
+  background: var(--color-white);
+  padding: 1rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: transform 0.2s;
+}
+
+.amel-card:hover {
+  transform: translateY(-1px);
+}
+
+.amel-card--owned {
+  background: var(--color-cream);
+  border: 1px solid var(--color-gold);
+}
+
+.amel-card__header {
+  margin-bottom: 0.5rem;
+}
+
+.amel-card__name {
+  color: var(--color-primary);
+  font-size: 0.95rem;
+  margin-bottom: 0.15rem;
+}
+
+.amel-card__effet {
+  display: inline-block;
+  background: var(--color-primary);
+  color: var(--color-white);
+  padding: 0.15rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.amel-card__action {
+  display: flex;
+  align-items: center;
+}
+
+.amel-card__badge {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--color-gold);
+  color: var(--color-primary);
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.amel-card__date {
+  font-size: 0.7rem;
+  font-weight: 400;
+  opacity: 0.8;
+  margin-top: 0.1rem;
+}
+
+/* ===== PROGRESSION ===== */
+.progression-container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.progression-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.35rem;
+}
+
+.progression-niveau {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-primary);
 }

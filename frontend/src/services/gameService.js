@@ -10,6 +10,15 @@ const gameService = {
   click: (partieId) => api.post(`/parties/${partieId}/click`),
 
   sync: (partieId) => api.post(`/parties/${partieId}/sync`),
+
+  acheterInfrastructure: (partieId, infraId) =>
+    api.post(`/parties/${partieId}/infrastructures/${infraId}/acheter`),
+
+  upgraderInfrastructure: (partieId, infraId) =>
+    api.post(`/parties/${partieId}/infrastructures/${infraId}/upgrader`),
+
+  acheterAmelioration: (partieId, amelId) =>
+    api.post(`/parties/${partieId}/ameliorations/${amelId}/acheter`),
 };
 
 export default gameService;

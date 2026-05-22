@@ -3,6 +3,9 @@ import gameService from '../services/gameService';
 
 export const GameContext = createContext(null);
 
+const COUT_MULTIPLIER = 1.15;
+const UPGRADE_COST_MULT = 1.5;
+
 export function GameProvider({ children }) {
   const [partie, setPartie] = useState(null);
   const [ressources, setRessources] = useState([]);
@@ -22,16 +25,28 @@ export function GameProvider({ children }) {
       id_partie: data.id_partie,
       nom_club: data.nom_club,
       niveau: data.niveau,
+      total_argent_genere: parseFloat(data.total_argent_genere || 0),
     });
     setRessources(data.ressources);
     setInfrastructures(data.infrastructures);
     setAmeliorations(data.ameliorations);
 
+    // Calcul de la production avec bonus ameliorations
+    const bonusProduction = data.ameliorations.reduce((acc, a) => {
+      if (!a.achete) return acc;
+      const [type, valeur] = a.effet.split(':');
+      const mult = parseFloat(valeur);
+      if (type === 'multiplicateur_production' || type === 'multiplicateur_global') {
+        return acc * mult;
+      }
+      return acc;
+    }, 1);
+
     const pps = data.infrastructures.reduce(
       (sum, infra) => sum + (infra.quantite || 0) * infra.production_base * (infra.niveau || 1),
       0
     );
-    setProductionParSeconde(pps);
+    setProductionParSeconde(pps * bonusProduction);
   }, []);
 
   const loadOrCreatePartie = useCallback(async () => {
@@ -73,6 +88,13 @@ export function GameProvider({ children }) {
         r.id_ressource === 1 ? { ...r, quantite: r.quantite + gain } : r
       )
     );
+    // Met a jour total_argent_genere et niveau si le backend a change
+    if (partie) {
+      setPartie((prev) => ({
+        ...prev,
+        total_argent_genere: prev.total_argent_genere + gain,
+      }));
+    }
     return gain;
   };
 
@@ -87,6 +109,27 @@ export function GameProvider({ children }) {
     );
   }, [partie, productionParSeconde]);
 
+  const acheterInfrastructure = useCallback(async (infraId) => {
+    if (!partie) return;
+    const res = await gameService.acheterInfrastructure(partie.id_partie, infraId);
+    await loadGameState(partie.id_partie);
+    return res.data;
+  }, [partie, loadGameState]);
+
+  const upgraderInfrastructure = useCallback(async (infraId) => {
+    if (!partie) return;
+    const res = await gameService.upgraderInfrastructure(partie.id_partie, infraId);
+    await loadGameState(partie.id_partie);
+    return res.data;
+  }, [partie, loadGameState]);
+
+  const acheterAmelioration = useCallback(async (amelId) => {
+    if (!partie) return;
+    const res = await gameService.acheterAmelioration(partie.id_partie, amelId);
+    await loadGameState(partie.id_partie);
+    return res.data;
+  }, [partie, loadGameState]);
+
   const value = {
     partie,
     ressources,
@@ -95,11 +138,16 @@ export function GameProvider({ children }) {
     loading,
     error,
     productionParSeconde,
+    COUT_MULTIPLIER,
+    UPGRADE_COST_MULT,
     loadOrCreatePartie,
     createPartie,
     click,
     tick,
     loadGameState,
+    acheterInfrastructure,
+    upgraderInfrastructure,
+    acheterAmelioration,
   };
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

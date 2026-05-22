@@ -5,13 +5,95 @@ const COUT_MULTIPLIER = 1.15;
 const UPGRADE_COST_MULT = 1.5;
 const OFFLINE_PENALTY = 0.5;
 
+// Parse les effets des ameliorations achetees par une partie
+// Retourne { multiplicateurProduction, multiplicateurClic }
+const getBonusAmeliorations = async (partieId, client) => {
+  const result = await (client || pool).query(
+    `SELECT a.effet FROM amelioration a
+     JOIN achat_amelioration aa ON aa.id_amelioration = a.id_amelioration
+     WHERE aa.id_partie = $1`,
+    [partieId]
+  );
+  let multiplicateurProduction = 1;
+  let multiplicateurClic = 1;
+  for (const row of result.rows) {
+    const [type, valeur] = row.effet.split(':');
+    const multiplicateur = parseFloat(valeur);
+
+    if (type === 'multiplicateur_production') {
+      multiplicateurProduction *= multiplicateur;
+    } else if (type === 'multiplicateur_clic') {
+      multiplicateurClic *= multiplicateur;
+    } else if (type === 'multiplicateur_global') {
+      multiplicateurProduction *= multiplicateur;
+      multiplicateurClic *= multiplicateur;
+    }
+  }
+  return { multiplicateurProduction, multiplicateurClic };
+};
+
+// Calcule le niveau du club base sur total_argent_genere
+const calculerNiveau = (totalArgent) => {
+  if (!totalArgent || totalArgent <= 0) return 1;
+  return Math.floor(Math.log2(totalArgent / 100 + 1)) + 1;
+};
+
+// Calcule l'argent total necessaire pour le prochain niveau
+const argentPourProchainNiveau = (niveau) => {
+  return Math.floor(100 * (Math.pow(2, niveau - 1) - 1));
+};
+
 const gameService = {
   click: async (partieId) => {
-    const result = await pool.query(
-      'UPDATE stock_ressource SET quantite = quantite + $1 WHERE id_partie = $2 AND id_ressource = 1 RETURNING quantite',
-      [CLIC_BASE, partieId]
-    );
-    return { gain: CLIC_BASE, nouvelle_quantite: result.rows[0].quantite };
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      const bonus = await getBonusAmeliorations(partieId, client);
+      const gainBase = CLIC_BASE * bonus.multiplicateurClic;
+      const gain = Math.floor(gainBase);
+
+      await client.query(
+        'UPDATE stock_ressource SET quantite = quantite + $1 WHERE id_partie = $2 AND id_ressource = 1',
+        [gain, partieId]
+      );
+
+      await client.query(
+        'UPDATE partie SET total_argent_genere = COALESCE(total_argent_genere, 0) + $1 WHERE id_partie = $2',
+        [gain, partieId]
+      );
+
+      const quantiteResult = await client.query(
+        'SELECT quantite FROM stock_ressource WHERE id_partie = $1 AND id_ressource = 1',
+        [partieId]
+      );
+
+      // Mise a jour du niveau
+      const totalResult = await client.query(
+        'SELECT total_argent_genere, niveau FROM partie WHERE id_partie = $1',
+        [partieId]
+      );
+      const nouveauNiveau = calculerNiveau(parseFloat(totalResult.rows[0].total_argent_genere));
+      if (nouveauNiveau > totalResult.rows[0].niveau) {
+        await client.query(
+          'UPDATE partie SET niveau = $1 WHERE id_partie = $2',
+          [nouveauNiveau, partieId]
+        );
+        // Ajout de Prestige : +10 * nouveau_niveau
+        await client.query(
+          'UPDATE stock_ressource SET quantite = quantite + $1 WHERE id_partie = $2 AND id_ressource = 3',
+          [10 * nouveauNiveau, partieId]
+        );
+      }
+
+      await client.query('COMMIT');
+      return { gain, nouvelle_quantite: quantiteResult.rows[0].quantite };
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
+    }
   },
 
   getProductionPerSecond: async (partieId) => {
@@ -45,12 +127,19 @@ const gameService = {
          WHERE pi.id_partie = $1`,
         [partieId]
       );
-      const pps = parseFloat(ppsResult.rows[0].pps);
+      const ppsBase = parseFloat(ppsResult.rows[0].pps);
+
+      const bonus = await getBonusAmeliorations(partieId, client);
+      const pps = ppsBase * bonus.multiplicateurProduction;
       const gainsHorsLigne = Math.floor(pps * secondesEcoulees * OFFLINE_PENALTY);
 
       if (gainsHorsLigne > 0) {
         await client.query(
           'UPDATE stock_ressource SET quantite = quantite + $1 WHERE id_partie = $2 AND id_ressource = 1',
+          [gainsHorsLigne, partieId]
+        );
+        await client.query(
+          'UPDATE partie SET total_argent_genere = COALESCE(total_argent_genere, 0) + $1 WHERE id_partie = $2',
           [gainsHorsLigne, partieId]
         );
       }
@@ -59,6 +148,23 @@ const gameService = {
         'UPDATE partie SET dernier_login = $1 WHERE id_partie = $2',
         [now, partieId]
       );
+
+      // Mise a jour du niveau
+      const totalResult = await client.query(
+        'SELECT total_argent_genere, niveau FROM partie WHERE id_partie = $1',
+        [partieId]
+      );
+      const nouveauNiveau = calculerNiveau(parseFloat(totalResult.rows[0].total_argent_genere));
+      if (nouveauNiveau > totalResult.rows[0].niveau) {
+        await client.query(
+          'UPDATE partie SET niveau = $1 WHERE id_partie = $2',
+          [nouveauNiveau, partieId]
+        );
+        await client.query(
+          'UPDATE stock_ressource SET quantite = quantite + $1 WHERE id_partie = $2 AND id_ressource = 3',
+          [10 * nouveauNiveau, partieId]
+        );
+      }
 
       await client.query('COMMIT');
 
@@ -82,6 +188,10 @@ const gameService = {
         Math.pow(UPGRADE_COST_MULT, niveauActuel - 1)
     );
   },
+
+  calculerNiveau,
+  argentPourProchainNiveau,
 };
 
 module.exports = gameService;
+module.exports.getBonusAmeliorations = getBonusAmeliorations;

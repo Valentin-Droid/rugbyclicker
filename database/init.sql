@@ -23,6 +23,7 @@ CREATE TABLE partie (
     nom_club VARCHAR(100) NOT NULL,
     niveau INT NOT NULL DEFAULT 1,
     dernier_login TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    total_argent_genere NUMERIC(14,2) DEFAULT 0,
     id_joueur INT NOT NULL,
     CONSTRAINT fk_partie_joueur
         FOREIGN KEY (id_joueur) REFERENCES joueur(id_joueur)
@@ -99,6 +100,9 @@ CREATE TABLE achat_amelioration (
         FOREIGN KEY (id_amelioration) REFERENCES amelioration(id_amelioration)
         ON DELETE CASCADE
 );
+
+-- Ajout colonne pour le calcul des niveaux (si la table existe déjà)
+ALTER TABLE partie ADD COLUMN IF NOT EXISTS total_argent_genere NUMERIC(14,2) DEFAULT 0;
 
 -- Index pour les performances
 CREATE INDEX idx_partie_joueur ON partie(id_joueur);
