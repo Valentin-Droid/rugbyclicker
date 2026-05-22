@@ -30,12 +30,12 @@ function formatNumber(value) {
   return Math.floor(num).toString();
 }
 
-function getCoutAchat(coutBase, quantite, niveau) {
-  return Math.floor(coutBase * Math.pow(1.15, quantite) * Math.pow(1.5, niveau - 1));
+function getCoutAchat(coutBase, quantite) {
+  return Math.floor(coutBase * Math.pow(1.15, quantite));
 }
 
-function getCoutUpgrade(coutBase, quantite, niveau) {
-  return Math.floor(coutBase * Math.pow(1.15, quantite) * Math.pow(1.5, niveau));
+function getCoutUpgrade(coutBase, niveau) {
+  return Math.floor(coutBase * 5 * Math.pow(1.5, niveau));
 }
 
 function InfrastructureCard({ infrastructure, isCheapest, isBarelyAffordable }) {
@@ -55,8 +55,8 @@ function InfrastructureCard({ infrastructure, isCheapest, isBarelyAffordable }) 
   const coutBase = parseFloat(infrastructure.cout_base);
   const productionBase = parseFloat(infrastructure.production_base);
 
-  const coutAchat = getCoutAchat(coutBase, quantite, niveau);
-  const coutUpgrade = getCoutUpgrade(coutBase, quantite, niveau);
+  const coutAchat = getCoutAchat(coutBase, quantite);
+  const coutUpgrade = getCoutUpgrade(coutBase, niveau);
 
   const productionActuelle = quantite * productionBase * niveau;
   const productionApresAchat = (quantite + 1) * productionBase * niveau;

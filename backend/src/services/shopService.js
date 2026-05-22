@@ -1,6 +1,5 @@
 const pool = require('../models/db');
 const COUT_MULTIPLIER = 1.15;
-const UPGRADE_COST_MULT = 1.5;
 
 const shopService = {
   // Achete une infrastructure (quantite +1)
@@ -26,7 +25,7 @@ const shopService = {
       const coutBase = parseFloat(infraResult.rows[0].cout_base);
 
       const cout = Math.floor(
-        coutBase * Math.pow(COUT_MULTIPLIER, quantite) * Math.pow(UPGRADE_COST_MULT, niveau - 1)
+        coutBase * Math.pow(COUT_MULTIPLIER, quantite)
       );
 
       const soldeResult = await client.query(
@@ -77,8 +76,7 @@ const shopService = {
         niveau: nouvellePossession.rows[0].niveau,
         prochain_cout: Math.floor(
           coutBase *
-            Math.pow(COUT_MULTIPLIER, nouvellePossession.rows[0].quantite) *
-            Math.pow(UPGRADE_COST_MULT, nouvellePossession.rows[0].niveau - 1)
+            Math.pow(COUT_MULTIPLIER, nouvellePossession.rows[0].quantite)
         ),
       };
     } catch (err) {
@@ -119,7 +117,7 @@ const shopService = {
       const coutBase = parseFloat(infraResult.rows[0].cout_base);
 
       const cout = Math.floor(
-        coutBase * Math.pow(COUT_MULTIPLIER, quantite) * Math.pow(UPGRADE_COST_MULT, niveau)
+        coutBase * 5 * Math.pow(1.5, niveau)
       );
 
       const soldeResult = await client.query(
@@ -163,9 +161,7 @@ const shopService = {
         quantite: nouvellePossession.rows[0].quantite,
         niveau: nouveauNiveau,
         prochain_cout_upgrade: Math.floor(
-          coutBase *
-            Math.pow(COUT_MULTIPLIER, quantite) *
-            Math.pow(UPGRADE_COST_MULT, nouveauNiveau)
+          coutBase * 5 * Math.pow(1.5, nouveauNiveau)
         ),
       };
     } catch (err) {

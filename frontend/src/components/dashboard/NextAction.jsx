@@ -11,8 +11,8 @@ function formatNumber(value) {
   return Math.floor(num).toString();
 }
 
-function getCoutAchat(coutBase, quantite, niveau) {
-  return Math.floor(coutBase * Math.pow(1.15, quantite) * Math.pow(1.5, niveau - 1));
+function getCoutAchat(coutBase, quantite) {
+  return Math.floor(coutBase * Math.pow(1.15, quantite));
 }
 
 function NextAction() {
@@ -30,14 +30,13 @@ function NextAction() {
     .filter((i) => {
       const cout = getCoutAchat(
         parseFloat(i.cout_base),
-        i.quantite || 0,
-        i.niveau || 1
+        i.quantite || 0
       );
       return argent >= cout;
     })
     .sort((a, b) => {
-      const costA = getCoutAchat(parseFloat(a.cout_base), a.quantite || 0, a.niveau || 1);
-      const costB = getCoutAchat(parseFloat(b.cout_base), b.quantite || 0, b.niveau || 1);
+      const costA = getCoutAchat(parseFloat(a.cout_base), a.quantite || 0);
+      const costB = getCoutAchat(parseFloat(b.cout_base), b.quantite || 0);
       return costA - costB;
     });
 
@@ -51,7 +50,7 @@ function NextAction() {
   infrastructures.forEach((i) => {
     allCosts.push({
       name: i.nom,
-      cost: getCoutAchat(parseFloat(i.cout_base), i.quantite || 0, i.niveau || 1),
+      cost: getCoutAchat(parseFloat(i.cout_base), i.quantite || 0),
       type: 'infrastructure',
     });
   });
@@ -79,7 +78,7 @@ function NextAction() {
           Achète <strong>{infra.nom}</strong> pour générer des revenus passifs !
         </span>
         <span className="next-action__cost">{formatNumber(
-          getCoutAchat(parseFloat(infra.cout_base), infra.quantite || 0, infra.niveau || 1)
+          getCoutAchat(parseFloat(infra.cout_base), infra.quantite || 0)
         )}€</span>
       </div>
     );

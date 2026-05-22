@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const pool = require('./models/db');
 
 const authRoutes = require('./routes/authRoutes');
 const partieRoutes = require('./routes/partieRoutes');
@@ -34,8 +35,11 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 3001;
 
-app.listen(PORT, () => {
-  console.log(`Serveur démarré sur le port ${PORT}`);
+// Exécute les migrations puis démarre le serveur
+pool.runMigrations().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Serveur démarré sur le port ${PORT}`);
+  });
 });
 
 module.exports = app;

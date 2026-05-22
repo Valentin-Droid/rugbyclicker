@@ -2,8 +2,8 @@ const pool = require('../models/db');
 
 const CLIC_BASE = 1;
 const COUT_MULTIPLIER = 1.15;
-const UPGRADE_COST_MULT = 1.5;
 const OFFLINE_PENALTY = 0.5;
+const MAX_OFFLINE_SECONDS = 86400; // 24 heures max
 
 // Parse les effets des ameliorations achetees par une partie
 // Retourne { multiplicateurProduction, multiplicateurClic }
@@ -118,7 +118,10 @@ const gameService = {
       );
       const dernierLogin = new Date(partieResult.rows[0].dernier_login);
       const now = new Date();
-      const secondesEcoulees = Math.floor((now - dernierLogin) / 1000);
+      const secondesEcoulees = Math.min(
+        Math.floor((now - dernierLogin) / 1000),
+        MAX_OFFLINE_SECONDS
+      );
 
       const ppsResult = await client.query(
         `SELECT COALESCE(SUM(pi.quantite * i.production_base * pi.niveau), 0) as pps
@@ -181,12 +184,12 @@ const gameService = {
     }
   },
 
-  getCoutAchat: (coutBase, quantiteActuelle, niveauActuel) => {
-    return Math.floor(
-      coutBase *
-        Math.pow(COUT_MULTIPLIER, quantiteActuelle) *
-        Math.pow(UPGRADE_COST_MULT, niveauActuel - 1)
-    );
+  getCoutAchat: (coutBase, quantiteActuelle) => {
+    return Math.floor(coutBase * Math.pow(COUT_MULTIPLIER, quantiteActuelle));
+  },
+
+  getCoutUpgrade: (coutBase, niveauActuel) => {
+    return Math.floor(coutBase * 5 * Math.pow(1.5, niveauActuel));
   },
 
   calculerNiveau,

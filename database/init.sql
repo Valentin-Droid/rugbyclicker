@@ -23,7 +23,7 @@ CREATE TABLE partie (
     nom_club VARCHAR(100) NOT NULL,
     niveau INT NOT NULL DEFAULT 1,
     dernier_login TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    total_argent_genere NUMERIC(14,2) DEFAULT 0,
+    total_argent_genere NUMERIC(24,2) DEFAULT 0,
     id_joueur INT NOT NULL,
     CONSTRAINT fk_partie_joueur
         FOREIGN KEY (id_joueur) REFERENCES joueur(id_joueur)
@@ -41,7 +41,7 @@ CREATE TABLE ressource (
 CREATE TABLE stock_ressource (
     id_partie INT NOT NULL,
     id_ressource INT NOT NULL,
-    quantite NUMERIC(14,2) NOT NULL DEFAULT 0,
+    quantite NUMERIC(24,2) NOT NULL DEFAULT 0,
     PRIMARY KEY (id_partie, id_ressource),
     CONSTRAINT fk_stock_partie
         FOREIGN KEY (id_partie) REFERENCES partie(id_partie)
@@ -102,7 +102,11 @@ CREATE TABLE achat_amelioration (
 );
 
 -- Ajout colonne pour le calcul des niveaux (si la table existe déjà)
-ALTER TABLE partie ADD COLUMN IF NOT EXISTS total_argent_genere NUMERIC(14,2) DEFAULT 0;
+ALTER TABLE partie ADD COLUMN IF NOT EXISTS total_argent_genere NUMERIC(24,2) DEFAULT 0;
+
+-- Migration : augmentation de la precision pour les gros montants (idle game)
+ALTER TABLE stock_ressource ALTER COLUMN quantite TYPE NUMERIC(24,2);
+ALTER TABLE partie ALTER COLUMN total_argent_genere TYPE NUMERIC(24,2);
 
 -- Index pour les performances
 CREATE INDEX idx_partie_joueur ON partie(id_joueur);

@@ -4,7 +4,6 @@ import gameService from '../services/gameService';
 export const GameContext = createContext(null);
 
 const COUT_MULTIPLIER = 1.15;
-const UPGRADE_COST_MULT = 1.5;
 
 export function GameProvider({ children }) {
   const [partie, setPartie] = useState(null);
@@ -139,7 +138,6 @@ export function GameProvider({ children }) {
     error,
     productionParSeconde,
     COUT_MULTIPLIER,
-    UPGRADE_COST_MULT,
     loadOrCreatePartie,
     createPartie,
     click,

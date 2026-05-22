@@ -38,8 +38,7 @@ function ShopPanel() {
     infraTriees.forEach((i) => {
       const cout = Math.floor(
         parseFloat(i.cout_base) *
-        Math.pow(1.15, i.quantite || 0) *
-        Math.pow(1.5, (i.niveau || 1) - 1)
+        Math.pow(1.15, i.quantite || 0)
       );
       if (cheapest === null && argent >= cout && (i.quantite || 0) === 0) {
         cheapest = i.id_infrastructure;
