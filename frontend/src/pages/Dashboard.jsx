@@ -4,7 +4,9 @@ import { useGame } from '../hooks/useGame';
 import useInterval from '../hooks/useInterval';
 import NewGameModal from '../components/dashboard/NewGameModal';
 import ResourceBar from '../components/dashboard/ResourceBar';
-import ClickZone from '../components/dashboard/ClickZone';
+import StadiumView from '../components/dashboard/StadiumView';
+import MyClub from '../components/dashboard/MyClub';
+import RandomEvent from '../components/dashboard/RandomEvent';
 import ShopPanel from '../components/shop/ShopPanel';
 import ClubProgression from '../components/progression/ClubProgression';
 import NextAction from '../components/dashboard/NextAction';
@@ -102,16 +104,19 @@ function Dashboard() {
       <main className="dashboard-grid">
         <div className="dashboard-col dashboard-col-left">
           <ResourceBar />
+          <MyClub />
         </div>
 
         <div className="dashboard-col dashboard-col-center">
-          <ClickZone />
+          <StadiumView />
         </div>
 
         <div className="dashboard-col dashboard-col-right">
           <ShopPanel />
         </div>
       </main>
+
+      <RandomEvent />
 
       <footer className="dashboard-footer">
         <ClubProgression />
