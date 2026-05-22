@@ -3,7 +3,11 @@ const express = require('express');
 const cors = require('cors');
 
 const authRoutes = require('./routes/authRoutes');
+const partieRoutes = require('./routes/partieRoutes');
 const errorHandler = require('./middleware/errorHandler');
+
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./utils/swagger');
 
 const app = express();
 
@@ -13,11 +17,15 @@ app.use(express.json());
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/parties', partieRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+// Documentation Swagger
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Error handler (toujours en dernier)
 app.use(errorHandler);
