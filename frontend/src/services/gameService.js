@@ -22,6 +22,11 @@ const gameService = {
 
   getCoachRecommendation: (partieId) =>
     api.post(`/parties/${partieId}/coach`),
+
+  getClassement: () => api.get('/classement'),
+
+  applyEvent: (partieId, eventType, level) =>
+    api.post(`/parties/${partieId}/event`, { eventType, level }),
 };
 
 export default gameService;

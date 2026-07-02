@@ -9,6 +9,7 @@ import MyClub from '../components/dashboard/MyClub';
 import RandomEvent from '../components/dashboard/RandomEvent';
 import ShopPanel from '../components/shop/ShopPanel';
 import ClubProgression from '../components/progression/ClubProgression';
+import Leaderboard from '../components/progression/Leaderboard';
 import NextAction from '../components/dashboard/NextAction';
 import CoachAssistant from '../components/ia/CoachAssistant';
 
@@ -122,6 +123,7 @@ function Dashboard() {
 
       <footer className="dashboard-footer">
         <ClubProgression />
+        <Leaderboard />
       </footer>
     </div>
   );

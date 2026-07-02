@@ -129,4 +129,36 @@ router.post('/:id/sync', authMiddleware, gameController.sync);
  */
 router.post('/:id/coach', authMiddleware, require('../controllers/coachController').getRecommendation);
 
+/**
+ * @swagger
+ * /api/parties/{id}/event:
+ *   post:
+ *     tags: [Jeu]
+ *     summary: Appliquer un événement aléatoire (Ballon d'Or, Supporter, Sponsor, Étoile)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [eventType, level]
+ *             properties:
+ *               eventType:
+ *                 type: string
+ *               level:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: Gain appliqué
+ */
+router.post('/:id/event', authMiddleware, require('../controllers/eventController').applyEvent);
+
 module.exports = router;

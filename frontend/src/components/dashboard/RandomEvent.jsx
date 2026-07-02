@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useGame } from '../../hooks/useGame';
+import gameService from '../../services/gameService';
 
 /* ─────────────────────────────────────────────────────
    Event definitions
@@ -142,10 +143,11 @@ function RandomEvent() {
       const color = colorMap[currentEvent.type] || 'var(--color-gold)';
       setExplosionParticles(createExplosion(color));
 
-      // Apply effect based on type
-      if (currentEvent.type === 'ballon-dor') {
-        await click(); // Give money through click API
-        // Show a second float for the bonus
+      // Appliquer l'effet côté serveur
+      try {
+        await gameService.applyEvent(partie.id_partie, currentEvent.type, level);
+      } catch (err) {
+        console.error('[RandomEvent] Erreur serveur:', err);
       }
 
       // Clean up event
