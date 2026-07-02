@@ -109,4 +109,24 @@ router.post('/:id/click', authMiddleware, gameController.click);
  */
 router.post('/:id/sync', authMiddleware, gameController.sync);
 
+/**
+ * @swagger
+ * /api/parties/{id}/coach:
+ *   post:
+ *     tags: [IA]
+ *     summary: Obtenir une recommandation de l'assistant IA (Ollama)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Recommandation IA (action, raison, impact)
+ */
+router.post('/:id/coach', authMiddleware, require('../controllers/coachController').getRecommendation);
+
 module.exports = router;

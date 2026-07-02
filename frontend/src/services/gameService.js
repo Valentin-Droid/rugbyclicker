@@ -19,6 +19,9 @@ const gameService = {
 
   acheterAmelioration: (partieId, amelId) =>
     api.post(`/parties/${partieId}/ameliorations/${amelId}/acheter`),
+
+  getCoachRecommendation: (partieId) =>
+    api.post(`/parties/${partieId}/coach`),
 };
 
 export default gameService;

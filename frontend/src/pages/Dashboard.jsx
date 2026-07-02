@@ -10,6 +10,7 @@ import RandomEvent from '../components/dashboard/RandomEvent';
 import ShopPanel from '../components/shop/ShopPanel';
 import ClubProgression from '../components/progression/ClubProgression';
 import NextAction from '../components/dashboard/NextAction';
+import CoachAssistant from '../components/ia/CoachAssistant';
 
 function Dashboard() {
   const { user, logout } = useAuth();
@@ -100,6 +101,7 @@ function Dashboard() {
       )}
 
       <NextAction />
+      <CoachAssistant />
 
       <main className="dashboard-grid">
         <div className="dashboard-col dashboard-col-left">
