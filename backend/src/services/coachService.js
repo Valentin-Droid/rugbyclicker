@@ -233,22 +233,26 @@ const coachService = {
       const contenu = response.message.content.trim();
 
       // Parser la réponse JSON
+      let recommandation = null;
       try {
-        const recommandation = JSON.parse(contenu);
-        return recommandation;
+        recommandation = JSON.parse(contenu);
       } catch {
-        // Si le modèle ne retourne pas du JSON valide, on nettoie
         const cleaned = contenu.replace(/```json|```/g, '').trim();
         try {
-          return JSON.parse(cleaned);
+          recommandation = JSON.parse(cleaned);
         } catch {
-          return {
-            action: 'Analyser manuellement',
-            raison: contenu.substring(0, 200),
-            impact: 'Voir la raison ci-dessus',
-          };
+          // fallback — on garde le texte brut
         }
       }
+
+      // Valider que les 3 champs attendus sont présents
+      if (recommandation && recommandation.action && recommandation.raison && recommandation.impact) {
+        return recommandation;
+      }
+
+      // Si le JSON est incomplet ou absent, fallback algorithmique
+      console.warn('[coachService] Réponse Ollama invalide ou incomplète, fallback algorithmique');
+      return generateFallbackRecommendation(etatPartie);
     } catch (err) {
       console.error('[coachService] Erreur Ollama:', err.message);
       // Fallback algorithmique intelligent quand Ollama est injoignable
