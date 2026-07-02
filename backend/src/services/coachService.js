@@ -68,6 +68,106 @@ Réponds dans ce format JSON exact (et rien d'autre) :
 }`;
 }
 
+/**
+ * Fallback algorithmique intelligent quand Ollama est injoignable.
+ * Analyse l'état de la partie et produit une recommandaction prioritaire
+ * basée sur le meilleur rapport qualité/prix (comme NextAction.jsx côté frontend).
+ */
+function generateFallbackRecommendation(etatPartie) {
+  const argent = etatPartie.ressources.find(r => r.id_ressource === 1)?.quantite || 0;
+  const productionParSeconde = etatPartie.productionParSeconde;
+
+  // 1. Meilleure infrastructure à acheter (rapport production/coût)
+  let bestBuy = null;
+  for (const infra of etatPartie.infrastructures) {
+    const cout = gameService.getCoutAchat(parseFloat(infra.cout_base), infra.quantite || 0);
+    const prod = parseFloat(infra.production_base);
+    const ratio = cout > 0 ? prod / cout : 0;
+    const affordable = argent >= cout;
+    if (!bestBuy || (affordable && !bestBuy.affordable) ||
+        (affordable === bestBuy.affordable && ratio > bestBuy.ratio)) {
+      bestBuy = { nom: infra.nom, cout, ratio, affordable, type: 'achat', prod };
+    }
+  }
+
+  // 2. Meilleure upgrade pour les infrastructures possédées
+  let bestUpgrade = null;
+  for (const infra of etatPartie.infrastructures) {
+    if ((infra.quantite || 0) === 0) continue;
+    const cout = gameService.getCoutUpgrade(parseFloat(infra.cout_base), infra.niveau || 1);
+    const gainProd = parseFloat(infra.production_base) * (infra.quantite || 0);
+    const ratio = cout > 0 ? gainProd / cout : 0;
+    const affordable = argent >= cout;
+    if (!bestUpgrade || (affordable && !bestUpgrade.affordable) ||
+        (affordable === bestUpgrade.affordable && ratio > bestUpgrade.ratio)) {
+      bestUpgrade = { nom: infra.nom, cout, ratio, affordable, type: 'upgrade',
+        niveauActuel: infra.niveau || 1, gainProd };
+    }
+  }
+
+  // 3. Meilleure amélioration (la moins chère non achetée)
+  let bestAmel = null;
+  for (const amel of etatPartie.ameliorations) {
+    if (amel.achete) continue;
+    const cout = parseFloat(amel.cout);
+    const affordable = argent >= cout;
+    if (!bestAmel || (affordable && !bestAmel.affordable) ||
+        (affordable === bestAmel.affordable && cout < bestAmel.cout)) {
+      bestAmel = { nom: amel.nom, cout, ratio: 0, affordable, type: 'amelioration', effet: amel.effet };
+    }
+  }
+
+  // Collecter et trier : abordables d'abord, puis meilleur ratio
+  const candidates = [bestBuy, bestUpgrade, bestAmel].filter(Boolean);
+  candidates.sort((a, b) => {
+    if (a.affordable !== b.affordable) return a.affordable ? -1 : 1;
+    if (a.type === 'amelioration' && b.type !== 'amelioration') return 1;
+    if (b.type === 'amelioration' && a.type !== 'amelioration') return -1;
+    return b.ratio - a.ratio;
+  });
+
+  if (candidates.length === 0) {
+    return {
+      action: 'Continuer à cliquer',
+      raison: `Aucune action disponible. Production passive : ${productionParSeconde}€/s.`,
+      impact: 'Accumule des ressources en cliquant',
+    };
+  }
+
+  const selected = candidates[0];
+
+  if (selected.affordable) {
+    switch (selected.type) {
+      case 'achat':
+        return {
+          action: `Acheter ${selected.nom}`,
+          raison: `Tu as ${argent}€ et cette infrastructure coûte ${selected.cout}€. Meilleur rapport production/coût.`,
+          impact: `+${selected.prod}€/s de production passive`,
+        };
+      case 'upgrade':
+        return {
+          action: `Améliorer ${selected.nom} (niveau ${selected.niveauActuel} → ${selected.niveauActuel + 1})`,
+          raison: `Coût ${selected.cout}€. L'amélioration double la production de chaque unité de ${selected.nom}.`,
+          impact: `+${selected.gainProd}€/s supplémentaires`,
+        };
+      case 'amelioration':
+        return {
+          action: `Acheter l'amélioration ${selected.nom}`,
+          raison: `Coût ${selected.cout}€. Effet permanent : ${selected.effet}.`,
+          impact: `Bonus : ${selected.effet}`,
+        };
+    }
+  }
+
+  // Rien d'abordable — indiquer la cible la plus proche
+  const manque = selected.cout - argent;
+  return {
+    action: 'Continuer à cliquer',
+    raison: `Aucune action abordable (${argent}€). Prochaine cible : ${selected.nom} à ${selected.cout}€ (manque ${manque}€).`,
+    impact: `Économise jusqu'à ${selected.cout}€ pour débloquer ${selected.nom}`,
+  };
+}
+
 const coachService = {
   /**
    * POST /parties/:id/coach
@@ -80,7 +180,9 @@ const coachService = {
       [partieId]
     );
     if (partieResult.rows.length === 0) {
-      throw new Error('Partie introuvable');
+      const error = new Error('Partie introuvable');
+      error.statusCode = 404;
+      throw error;
     }
     const partie = partieResult.rows[0];
 
@@ -149,12 +251,8 @@ const coachService = {
       }
     } catch (err) {
       console.error('[coachService] Erreur Ollama:', err.message);
-      // Fallback si Ollama est injoignable
-      return {
-        action: 'Continuer à cliquer',
-        raison: "L'assistant IA est temporairement indisponible. Continue à accumuler des ressources en attendant.",
-        impact: 'Gains par clic immédiats',
-      };
+      // Fallback algorithmique intelligent quand Ollama est injoignable
+      return generateFallbackRecommendation(etatPartie);
     }
   },
 };

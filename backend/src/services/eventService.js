@@ -55,7 +55,11 @@ const eventService = {
    */
   applyEvent: async (partieId, eventType, level) => {
     const eventDef = EVENT_DEFINITIONS.find((e) => e.type === eventType);
-    if (!eventDef) throw new Error(`Type d'événement inconnu : ${eventType}`);
+    if (!eventDef) {
+      const error = new Error(`Type d'événement inconnu : ${eventType}`);
+      error.statusCode = 400;
+      throw error;
+    }
 
     const client = await pool.connect();
     try {

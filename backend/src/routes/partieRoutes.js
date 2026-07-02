@@ -1,9 +1,21 @@
 const router = require('express').Router();
+const rateLimit = require('express-rate-limit');
 const partieController = require('../controllers/partieController');
 const gameController = require('../controllers/gameController');
+const coachController = require('../controllers/coachController');
+const eventController = require('../controllers/eventController');
 const validate = require('../middleware/validationMiddleware');
 const authMiddleware = require('../middleware/authMiddleware');
 const { createPartieSchema } = require('../validators/partieValidator');
+
+// Rate limiter pour la route coach : 5 requêtes par minute max (protège Ollama)
+const coachLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Trop de requêtes. Réessayez dans une minute.' },
+});
 
 /**
  * @swagger
@@ -127,7 +139,7 @@ router.post('/:id/sync', authMiddleware, gameController.sync);
  *       200:
  *         description: Recommandation IA (action, raison, impact)
  */
-router.post('/:id/coach', authMiddleware, require('../controllers/coachController').getRecommendation);
+router.post('/:id/coach', authMiddleware, coachLimiter, coachController.getRecommendation);
 
 /**
  * @swagger
@@ -159,6 +171,6 @@ router.post('/:id/coach', authMiddleware, require('../controllers/coachControlle
  *       200:
  *         description: Gain appliqué
  */
-router.post('/:id/event', authMiddleware, require('../controllers/eventController').applyEvent);
+router.post('/:id/event', authMiddleware, eventController.applyEvent);
 
 module.exports = router;
